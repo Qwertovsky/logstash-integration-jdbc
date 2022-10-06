@@ -3,3 +3,5 @@ Gemfile.lock
 .bundle
 vendor
 derby.log
+.gradle
+build

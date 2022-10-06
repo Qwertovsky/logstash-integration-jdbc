@@ -24,10 +24,29 @@ Need help? Try #logstash on freenode IRC or the https://discuss.elastic.co/c/log
 ### 1. Plugin Development and Testing
 
 #### Code
-- To get started, you'll need JRuby with the Bundler gem installed.
+- To get started, you'll need JRuby.
 
-- Clone from the GitHub [logstash-plugins](https://github.com/logstash-plugins/logstash-integration-jdbc) organization.
+```sh
+export PATH=/jruby/bin:$PATH
+```
 
+- Install bundler gem
+```sh
+gem install bundler
+```
+
+- To develop a plugin you need a local clone of Logstash repository.
+```sh
+git clone --branch 8.1 --single-branch https://github.com/elastic/logstash.git
+cd logstash
+./gradlew assemble
+```
+
+- Point the plugin's environment to it
+```sh
+export LOGSTASH_PATH=/path/to/logstash/
+export LOGSTASH_SOURCE=1
+```
 - Install vendor JDBC jars
 ```sh
 ./gradlew vendor
@@ -38,46 +57,12 @@ Need help? Try #logstash on freenode IRC or the https://discuss.elastic.co/c/log
 bundle install
 ```
 
-#### Test
-
-- Update your dependencies
-
-```sh
-bundle install
-```
-
 - Run tests
-
 ```sh
 bundle exec rspec
 ```
 
 ### 2. Running your unpublished Plugin in Logstash
-
-#### 2.1 Run in a local Logstash clone
-
-- Edit Logstash `Gemfile` and add the local plugin path, for example:
-```ruby
-gem "logstash-integration-jdbc", :path => "/your/local/logstash-integration-jdbc"
-```
-- Install plugin
-```sh
-# Logstash 2.3 and higher
-bin/logstash-plugin install --no-verify
-
-# Prior to Logstash 2.3
-bin/plugin install --no-verify
-
-```
-- Run Logstash with your plugin
-```sh
-bin/logstash -e 'filter {jdbc_streaming {}}'
-```
-At this point any modifications to the plugin code will be applied to this local Logstash setup. After modifying the plugin, simply rerun Logstash.
-
-#### 2.2 Run in an installed Logstash
-
-You can use the same **2.1** method to run your plugin in an installed Logstash by editing its `Gemfile` and pointing the `:path` to your local plugin development directory or you can build the gem and install it using:
 
 - Build your plugin gem
 ```sh
@@ -85,12 +70,7 @@ gem build logstash-integration-jdbc.gemspec
 ```
 - Install the plugin from the Logstash home
 ```sh
-# Logstash 2.3 and higher
-bin/logstash-plugin install --no-verify
-
-# Prior to Logstash 2.3
-bin/plugin install --no-verify
-
+bin/logstash-plugin install /my/logstash/plugins/logstash-integration-jdbc/logstash-integration-jdbc-0.1.0.gem
 ```
 - Start Logstash and proceed to test the plugin
 

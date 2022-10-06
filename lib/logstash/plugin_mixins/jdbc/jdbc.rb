@@ -202,6 +202,7 @@ module LogStash  module PluginMixins module Jdbc
         @logger.warn("Failed to close connection", :exception => e)
       ensure
         @connection_lock.unlock
+        @database = nil
       end
     end
 
@@ -210,7 +211,7 @@ module LogStash  module PluginMixins module Jdbc
       success = false
       begin
         @connection_lock.lock
-        open_jdbc_connection
+        open_jdbc_connection if @database == nil
         sql_last_value = @use_column_value ? @value_tracker.value : Time.now.utc
         @tracking_column_warning_sent = false
         @statement_handler.perform_query(@database, @value_tracker.value) do |row|
@@ -223,10 +224,10 @@ module LogStash  module PluginMixins module Jdbc
         details[:cause] = e.cause.inspect if e.cause
         details[:backtrace] = e.backtrace if @logger.debug?
         @logger.warn("Exception when executing JDBC query", details)
+        close_jdbc_connection
       else
         @value_tracker.set_value(sql_last_value)
       ensure
-        close_jdbc_connection
         @connection_lock.unlock
       end
       return success
